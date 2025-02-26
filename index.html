@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Website Automation Tool</title>
+  <style>
+    /* CSS Styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      height: 150px;
+    }
+
+    button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin-top: 10px;
+      margin-right: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #status {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Website Automation Tool</h1>
+    <form id="websiteForm">
+      <label for="links">Add Website Links (One per line):</label>
+      <textarea id="links" placeholder="https://example.com"></textarea>
+
+      <label for="scrollSpeed">Set Scroll Speed (in milliseconds):</label>
+      <input type="number" id="scrollSpeed" value="100" min="50" max="1000" />
+
+      <button type="submit">Open Websites</button>
+    </form>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    // Variables to manage automation
+    let links = [];
+    let scrollSpeed = 100;
+
+    // Open websites in new tabs
+    document.getElementById('websiteForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      links = document.getElementById('links').value.split('\n').filter(link => link.trim() !== '');
+      scrollSpeed = parseInt(document.getElementById('scrollSpeed').value);
+
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = 'Opening websites...';
+
+      if (links.length === 0) {
+        statusDiv.innerHTML = 'No links provided!';
+        return;
+      }
+
+      // Open each link in a new tab and start auto-scroll
+      links.forEach((link, index) => {
+        setTimeout(() => {
+          const newWindow = window.open(link, '_blank');
+          newWindow.onload = () => {
+            try {
+              newWindow.document.documentElement.requestFullscreen(); // Full-screen mode
+            } catch (error) {
+              console.log('Full-screen mode not supported.');
+            }
+
+            // Start auto-scroll in the new tab
+            let scrollPosition = 0;
+            let scrollDirection = 1; // 1 for down, -1 for up
+            setInterval(() => {
+              if (newWindow.scrollY >= newWindow.document.body.scrollHeight - newWindow.innerHeight) {
+                scrollDirection = -1; // Reverse direction when reaching bottom
+              } else if (newWindow.scrollY <= 0) {
+                scrollDirection = 1; // Reverse direction when reaching top
+              }
+
+              scrollPosition += scrollDirection * 50; // Scroll by 50px
+              newWindow.scrollTo(0, scrollPosition);
+            }, scrollSpeed);
+          };
+        }, index * 2000); // 2-second delay between each link
+      });
+
+      statusDiv.innerHTML = 'Websites opened successfully with auto-scroll!';
+    });
+  </script>
+</body>
+</html>
